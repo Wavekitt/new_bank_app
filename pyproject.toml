@@ -1,0 +1,37 @@
+[project]
+name = "new-bank-app"
+version = "0.1.0"
+description = ""
+authors = [
+    {name = "wavekitt",email = "valtermikhail@yandex.ru"}
+]
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.group.lint.dependencies]
+mypy = "^1.15.0"
+flake8 = "^7.1.2"
+black = "^25.1.0"
+isort = "^6.0.1"
+dotenv = "^0.9.9"
+requests = "^2.32.3"
+pandas = "^2.2.3"
+openpyxl = "^3.1.5"
+
+[tool.black]
+line-length = 119
+
+[tool.isort]
+profile = "black"
+
+[tool.mypy]
+disallow_untyped_defs=true
+arn_return_any=true
+exclude = 'venv'
