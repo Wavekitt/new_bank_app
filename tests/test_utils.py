@@ -1,9 +1,8 @@
-import pytest
+from unittest.mock import patch
 import pandas as pd
-from src.utils import get_greeting, read_xlsx, analyze_cards, convertation_curency, get_top_five_trans, get_stocks_prices, create_json_response
+from src.utils import (get_greeting, read_xlsx, analyze_cards, convertation_currency,
+                       get_top_five_trans, get_stocks_prices, create_json_response)
 import os
-import requests
-from unittest.mock import patch, Mock
 from dotenv import load_dotenv
 
 
@@ -20,8 +19,7 @@ def test_read_xlsx(tmp_path):
     df = pd.DataFrame({"Номер карты": [1234], "Сумма операции": [1000], "Кэшбэк": [50]})
     df.to_excel(filepath, index=False)
     result = read_xlsx(filepath)
-    assert not result.empty
-    assert list(result.columns) == ["Номер карты", "Сумма операции", "Кэшбэк"]
+    assert result.equals(df)
 
 
 def test_analyze_cards():
@@ -31,12 +29,13 @@ def test_analyze_cards():
     assert result[0]["card_number"] == "1234"
     assert result[1]["total_expenses"] == 2000
 
+
 @patch('requests.get')
 @patch.dict(os.environ, {"API_KEY": "fake_api_key"})
 def test_convert_current_wrong(mock_get):
     mock_get.return_value.status_code = 400
     mock_get.return_value.json.return_value = {"info": {"rate": 100}, "result": 100}
-    assert convertation_curency("USD", "RUB", 1.0) == "Error"
+    assert convertation_currency("USD", "RUB", 1.0) == "Error"
 
 
 def test_get_top_five_trans_success():

@@ -1,12 +1,10 @@
 import logging
 import os
-from typing import List
-from reports import spending_by_category
+from src.reports import spending_by_category
 from src.services import investment_bank, read_xlsx
-from views import main_func
+from src.views import main_func
 
 
-# Настройка логирования
 logs_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "logs")
 if not os.path.exists(logs_dir):
     os.makedirs(logs_dir)
@@ -48,10 +46,11 @@ def main() -> None:
     if menu == "1":
         logger.info("Выбрана категория Главная страница для отображения")
         print("Главная страница")
-
         input_date = input("Введите дату в формате: 'ДД.ММ.ГГГГ ЧЧ:ММ:СС'\n")
-        print(main_func())  # Вызываем main_func без передачи даты, т.к. она не нужна
 
+        # Используем input_date в main_func
+        result = main_func(input_date)  # Предполагается, что main_func принимает input_date
+        print(result)
         logger.info("Вывод результата программы")
 
     elif menu == "2":
@@ -80,6 +79,3 @@ def main() -> None:
         )
         print(spending_by_category(df, category, date))
         logger.info("Вывод результата ")
-
-if __name__ == "__main__":
-    main()

@@ -50,8 +50,8 @@ def read_xlsx(filepath: str) -> pd.DataFrame:
     """
     Функция, которая читает Excel файл.
     """
-    operations = pd.read_excel(filepath)
-    return operations
+    df = pd.read_excel(filepath)  # Используем pd.read_excel для чтения файла
+    return df
 
 
 def analyze_cards(df: pd.DataFrame) -> List[Dict[str, Any]]:
@@ -77,21 +77,25 @@ def analyze_cards(df: pd.DataFrame) -> List[Dict[str, Any]]:
 def convertation_currency(currency: str, rub: str, amount: float) -> Optional[float]:
     """
     Функция, которая конвертирует валюты.
+    Возвращает результат конвертации или "Error" в случае ошибки.
     """
     api_key = os.getenv("API_KEY")  # Получаем ключ из переменной окружения
     if not api_key:
-        return None
+        return "Error"  # Возвращаем "Error", если ключ отсутствует
 
     url = (
         f"https://api.apilayer.com/exchangerates_data/convert?"
         f"to={rub}&from={currency}&amount={amount}&apikey={api_key}"
     )
-    response = requests.get(url)
-    if response.status_code == 200:
-        result = response.json().get("result")
-        return result
-    else:
-        return None
+    try:
+        response = requests.get(url)
+        if response.status_code == 200:
+            result = response.json().get("result")
+            return result
+        else:
+            return "Error"  # Возвращаем "Error", если статус не 200
+    except Exception:
+        return "Error"  # Возвращаем "Error" в случае исключения
 
 
 def get_top_five_trans(filtered_data: pd.DataFrame) -> List[Dict[str, Any]]:

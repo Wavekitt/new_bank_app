@@ -1,6 +1,4 @@
-import pytest
 from src.services import investment_bank
-import json
 
 
 def test_empty_transactions():

@@ -4,7 +4,6 @@ import os
 from datetime import datetime, timedelta
 from typing import Optional
 import pandas as pd
-from src.utils import read_xlsx
 from src.decorators import report_func
 
 logs_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "logs")
@@ -25,11 +24,6 @@ def spending_by_category(
 ) -> str:
     """
     Функция возвращает траты по заданной категории за последние три месяца (от переданной даты).
-
-    :param transactions: DataFrame с транзакциями.
-    :param category: Категория расходов.
-    :param date: Дата, с которой нужно начинать анализ (если не передана, берется текущая дата).
-    :return: JSON строка с данными о расходах.
     """
     logger.info("Начало работы функции траты по категориям")
     category = category.capitalize()
@@ -43,31 +37,24 @@ def spending_by_category(
     logger.info("Определение времени для работы с транзакциями")
 
     # Преобразуем столбец с датами в тип datetime
-    transactions["Дата операции"] = transactions["Дата операции"].apply(
-        lambda x: datetime.strptime(x, "%d.%m.%Y %H:%M:%S") if pd.notnull(x) else None
-    )
+    transactions["Дата операции"] = pd.to_datetime(transactions["Дата операции"], format="%d.%m.%Y %H:%M:%S")
 
     # Определяем дату три месяца назад
     three_month_ago = input_date - timedelta(days=90)
 
     # Фильтруем транзакции по категории и дате
-    filtered_df = transactions[
-        (transactions["Категория"] == category)
-        & (transactions["Дата операции"] >= three_month_ago)
+    filtered_df = transactions[(
+        transactions["Категория"] == category
+        ) & (transactions["Дата операции"] >= three_month_ago)
         & (transactions["Дата операции"] <= input_date)
-        & (transactions["Сумма платежа"] < 0)
-        ]
-    logger.info("Транзакции переводятся в список словарей для дальнейшей работы")
+        & (transactions["Сумма операции"] < 0)
+    ]
 
     # Переводим транзакции в список словарей
     transacts_dict = filtered_df.to_dict(orient="records")
-    final_list = []
 
-    for item in transacts_dict:
-        item["Дата операции"] = item["Дата операции"].strftime("%d.%m.%Y %H:%M:%S")
-        final_list.append(item)
+    # Преобразуем даты в строки
+    for record in transacts_dict:
+        record["Дата операции"] = record["Дата операции"].strftime("%d.%m.%Y %H:%M:%S")
 
-    logger.info(f"Формирование итогового списка транзакций. Всего: {len(final_list)} транзакций")
-    logger.info("Завершение работы функции. Формирование итоговой JSON строки")
-
-    return json.dumps(final_list, ensure_ascii=False, indent=4)
+    return json.dumps(transacts_dict, ensure_ascii=False, indent=4)

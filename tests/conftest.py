@@ -1,10 +1,8 @@
-import pytest
-from unittest.mock import Mock, MagicMock
 import os
 from dotenv import load_dotenv
 import pytest
-from datetime import datetime
 import pandas as pd
+from unittest.mock import Mock
 
 
 load_dotenv()
@@ -27,9 +25,11 @@ def mock_get_stocks_prices_response():
     mock.json.return_value = mock_response
     return mock
 
+
 @pytest.fixture
 def mock_read_xlsx(mocker):
     return mocker.patch("src.views.read_xlsx", return_value=["mock_data"])
+
 
 @pytest.fixture
 def mock_get_greeting(mocker):
@@ -41,19 +41,19 @@ def mock_analyze_cards(mocker):
     return mocker.patch("src.views.analyze_cards", return_value=["card_1", "card_2"])
 
 
-@pytest.fixture
-def sample_transactions():
-    return [
-        {"Дата операции": "01.03.2025 10:00:00", "Сумма операции": 150},
-        {"Дата операции": "15.03.2025 15:30:00", "Сумма операции": 200},
-        {"Дата операции": "20.03.2025 09:00:00", "Сумма операции": 50},
-        {"Дата операции": "25.03.2025 12:45:00", "Сумма операции": 80},
-        {"Дата операции": "10.04.2025 16:00:00", "Сумма операции": 100}
-        ]
+# @pytest.fixture
+# def sample_transactions():
+#     return [
+#         {"Дата операции": "01.03.2025 10:00:00", "Сумма операции": 150},
+#         {"Дата операции": "15.03.2025 15:30:00", "Сумма операции": 200},
+#         {"Дата операции": "20.03.2025 09:00:00", "Сумма операции": 50},
+#         {"Дата операции": "25.03.2025 12:45:00", "Сумма операции": 80},
+#         {"Дата операции": "10.04.2025 16:00:00", "Сумма операции": 100}
+#         ]
+#
 
-
 @pytest.fixture
-def sample_transactions():
+def sample_transactions_data():
     data = {
         "Дата операции": [
             "01.01.2025 10:00:00",
