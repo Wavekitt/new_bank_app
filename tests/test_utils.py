@@ -1,5 +1,5 @@
 import os
-from unittest.mock import patch
+from unittest.mock import patch, MagicMock
 
 import pandas as pd
 from dotenv import load_dotenv
@@ -15,6 +15,10 @@ from src.utils import (
 )
 
 load_dotenv()
+
+currency_url = "https://api.apilayer.com/exchangerates_data/convert"
+currency_api_key = os.getenv("CURRENCY_API_KEY")
+headers = {"apikey": currency_api_key}
 
 
 def test_get_greeting():
@@ -38,35 +42,34 @@ def test_analyze_cards():
     assert result[1]["total_expenses"] == 2000
 
 
-@patch('requests.get')
-@patch.dict(os.environ, {"API_KEY": "fake_api_key"})
-def test_convert_current_wrong(mock_get):
-    mock_get.return_value.status_code = 400
-    mock_get.return_value.json.return_value = {"info": {"rate": 100}, "result": 100}
-    assert convertation_currency("USD", "RUB", 1.0) == "Error"
+@patch("requests.get")
+def test_convertation_currency_error(mock_get: MagicMock) -> None:
+    """Тест с ошибкой в API-запросе (например, неверный ответ от сервера) при получении курса валют"""
+    currencies = ["USD"]
+    params = {"from": "USD", "to": "RUB", "amount": 1}
+    mock_get.return_value.status_code = 500
+    assert convertation_currency(currencies) == []
+    mock_get.assert_called_once_with(currency_url, headers=headers, params=params, timeout=30)
 
 
-def test_get_top_five_trans_success():
-    data = {
-        "Дата операции": pd.to_datetime(
-            ["2025-03-01", "2025-03-02", "2025-03-03", "2025-03-04", "2025-03-05", "2025-03-06"]),
-        "Сумма операции": [100, 200, 150, 300, 250, 50],
-        "Категория": ["Категория1", "Категория2", "Категория3", "Категория4", "Категория5", "Категория6"],
-        "Описание": ["Описание1", "Описание2", "Описание3", "Описание4", "Описание5", "Описание6"]
-    }
-    df = pd.DataFrame(data)
-    result = get_top_five_trans(df)
-    assert len(result) == 5
-    assert result[0]["amount"] == 300
-    assert result[-1]["amount"] == 100
+def test_get_top_five_trans(sample_transactions_data):
+    expected_result = [
+        {"date": "25.01.01", "amount": 100, "category": "Еда", "description": "Кофе"},
+        {"date": "25.01.15", "amount": 50, "category": "Еда", "description": "Обед"},
+        {"date": "25.03.25", "amount": 40, "category": "Транспорт", "description": "Метро"},
+        {"date": "25.03.15", "amount": 30, "category": "Еда", "description": "Ужин"},
+        {"date": "25.02.01", "amount": 20, "category": "Транспорт", "description": "Такси"},
+    ]
+    result = get_top_five_trans(sample_transactions_data)
+    assert result == expected_result
 
 
-def test_get_stocks_prices_simple(mock_get_stocks_prices_response, mock_API_KEY, mocker):
-    mocker.patch('requests.get', return_value=mock_get_stocks_prices_response)
-    mocker.patch.dict(os.environ, {"API_KEY": mock_API_KEY})
-    stocks = ['AAPL', 'GOOGL']
-    result = get_stocks_prices(stocks)
-    assert len(result) == 2
+@patch("requests.get")
+def test_get_stocks_prices_api_error(mock_get: MagicMock) -> None:
+    """Тест с ошибкой в API-запросе (например, неверный ответ от сервера) при получении цены акций"""
+    stocks = ["AAPL"]
+    mock_get.return_value.status_code = 500
+    assert get_stocks_prices(stocks) == []
 
 
 def test_create_json_response():

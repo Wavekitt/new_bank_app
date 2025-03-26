@@ -2,14 +2,17 @@ import json
 import logging
 import os
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 import pandas as pd
 import requests
 from dotenv import load_dotenv
 
+
 load_dotenv()
 
+currency_api_key = os.getenv("CURRENCY_API_KEY")
+stocks_api_key = os.getenv("STOCKS_API_KEY")
 
 logs_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "logs")
 if not os.path.exists(logs_dir):
@@ -74,58 +77,65 @@ def analyze_cards(df: pd.DataFrame) -> List[Dict[str, Any]]:
     return result
 
 
-def convertation_currency(currency: str, rub: str, amount: float) -> Optional[float]:
+def convertation_currency(currencies: list) -> Any:
     """
-    Функция, которая конвертирует валюты.
-    Возвращает результат конвертации или "Error" в случае ошибки.
+    Конвертирует валюту через API.
+    Возвращает сумму или "Error" при ошибке.
     """
-    api_key = os.getenv("API_KEY")  # Получаем ключ из переменной окружения
-    if not api_key:
-        return "Error"  # Возвращаем "Error", если ключ отсутствует
-
-    url = (
-        f"https://api.apilayer.com/exchangerates_data/convert?"
-        f"to={rub}&from={currency}&amount={amount}&apikey={api_key}"
-    )
     try:
-        response = requests.get(url)
-        if response.status_code == 200:
-            result = response.json().get("result")
-            return result
-        else:
-            return "Error"  # Возвращаем "Error", если статус не 200
-    except Exception:
-        return "Error"  # Возвращаем "Error" в случае исключения
+        logger.info("Функция конвертации валют начала свою работу")
+        currency_rates = []
+        for currency in currencies:
+            url = "https://api.apilayer.com/exchangerates_data/convert"
+            headers = {"apikey": currency_api_key}
+            params = {"from": currency, "to": "RUB", "amount": 1}
+            response = requests.get(url, headers=headers, params=params, timeout=30)
+            if response.status_code == 200:
+                logger.info("get запрос на получение курса валют успешно отправлен")
+                data = response.json()
+                result = {"currency": currency, "rate": round(float(data["result"]), 2)}
+                currency_rates.append(result)
+            else:
+                logger.error(f"Ошибка API при получении курса валют: {response.status_code}")
+                print(f"Ошибка API: {response.status_code}")
+                return []
+        if currency_rates:
+            logger.info("Конвертация валют прошла успешно")
+            return currency_rates
+    except Exception as e:
+        print(f"Ошибка при конвертации: {e}")
+        logger.error(f"Ошибка при конвертации: {e}")
+        return []
 
 
-def get_top_five_trans(filtered_data: pd.DataFrame) -> List[Dict[str, Any]]:
-    """
-    Функция, которая возвращает топ-5 транзакций по сумме.
-    """
-    top_five = filtered_data.nlargest(5, "Сумма операции")
-    top_list = [
-        {
-            "date": transactions["Дата операции"].strftime("%d.%m.%Y"),
-            "amount": transactions["Сумма операции"],
-            "category": transactions["Категория"],
-            "description": transactions["Описание"]
-        }
-        for _, transactions in top_five.iterrows()
-    ]
-    return top_list
+def get_top_five_trans(filtered_df: pd.DataFrame) -> list[dict]:
+    """Функция для получения топ транзакций по сумме платежа"""
+    try:
+        logger.info("Функция по получению топ транзакций начала свою работу")
+        top_5_transactions = filtered_df.nlargest(5, "Сумма операции")
+        top_list = [
+            {
+                "date": transaction["Дата операции"].strftime("%y.%m.%d"),
+                "amount": transaction["Сумма операции"],
+                "category": transaction["Категория"],
+                "description": transaction["Описание"],
+            }
+            for _, transaction in top_5_transactions.iterrows()
+        ]
+        logger.info("Функция по получению топ транзакций успешно завершила свою работу")
+        return top_list
+    except Exception as e:
+        print(f"Ошибка: {e}")
+        logger.error(f"Ошибка: {e}")
+        return []
 
 
-def get_stocks_prices(stocks: List[str]) -> List[Dict[str, Any]]:
+def get_stocks_prices(stocks: list) -> Any:
     """
     Функция, получающая цены на акции.
     """
     stock_prices = []
     try:
-        # Получаем API-ключ из переменной окружения
-        currency_api_key = os.getenv("API_KEY")
-        if not currency_api_key:
-            raise ValueError("API key not found in environment variables.")
-
         logger.info("Функция для получения стоимости акций начала свою работу")
         for stock in stocks:
             url = f"https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol={stock}&apikey={currency_api_key}"
@@ -137,6 +147,7 @@ def get_stocks_prices(stocks: List[str]) -> List[Dict[str, Any]]:
                 stock_prices.append(result)
             else:
                 logger.error(f"Ошибка API при получении цен на акции: {response.status_code}")
+                print(f"Ошибка API: {response.status_code}")
                 return []
         if stock_prices:
             logger.info("Операция по получению цен на акции прошла успешно")
