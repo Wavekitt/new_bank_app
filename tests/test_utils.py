@@ -1,10 +1,18 @@
-from unittest.mock import patch
-import pandas as pd
-from src.utils import (get_greeting, read_xlsx, analyze_cards, convertation_currency,
-                       get_top_five_trans, get_stocks_prices, create_json_response)
 import os
+from unittest.mock import patch
+
+import pandas as pd
 from dotenv import load_dotenv
 
+from src.utils import (
+    analyze_cards,
+    convertation_currency,
+    create_json_response,
+    get_greeting,
+    get_stocks_prices,
+    get_top_five_trans,
+    read_xlsx,
+)
 
 load_dotenv()
 

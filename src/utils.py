@@ -1,12 +1,12 @@
 import json
-import os
 import logging
+import os
+from datetime import datetime
+from typing import Any, Dict, List, Optional
+
+import pandas as pd
 import requests
 from dotenv import load_dotenv
-from typing import Optional, Any, List, Dict
-from datetime import datetime
-import pandas as pd
-
 
 load_dotenv()
 

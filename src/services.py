@@ -2,8 +2,8 @@ import logging
 import os
 from datetime import datetime
 from typing import Any, Dict, List
-from src.utils import create_json_response
 
+from src.utils import create_json_response
 
 logs_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "logs")
 if not os.path.exists(logs_dir):

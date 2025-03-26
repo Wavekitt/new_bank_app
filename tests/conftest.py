@@ -1,9 +1,9 @@
 import os
-from dotenv import load_dotenv
-import pytest
-import pandas as pd
 from unittest.mock import Mock
 
+import pandas as pd
+import pytest
+from dotenv import load_dotenv
 
 load_dotenv()
 

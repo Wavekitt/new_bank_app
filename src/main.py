@@ -1,9 +1,10 @@
 import logging
 import os
-from src.reports import spending_by_category
-from src.services import investment_bank, read_xlsx
-from src.views import main_func
 
+from src.reports import spending_by_category
+from src.services import investment_bank
+from src.utils import read_xlsx
+from src.views import main_func
 
 logs_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "logs")
 if not os.path.exists(logs_dir):

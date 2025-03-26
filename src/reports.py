@@ -3,7 +3,9 @@ import logging
 import os
 from datetime import datetime, timedelta
 from typing import Optional
+
 import pandas as pd
+
 from src.decorators import report_func
 
 logs_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "logs")
