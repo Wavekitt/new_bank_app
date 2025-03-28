@@ -138,7 +138,7 @@ def get_stocks_prices(stocks: list) -> Any:
     try:
         logger.info("Функция для получения стоимости акций начала свою работу")
         for stock in stocks:
-            url = f"https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol={stock}&apikey={currency_api_key}"
+            url = f"https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol={stock}&apikey={stocks_api_key}"
             response = requests.get(url, timeout=10, allow_redirects=False)
             if response.status_code == 200:
                 logger.info("get запрос на получение цен на акции успешно отправлен")
