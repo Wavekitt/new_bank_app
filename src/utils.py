@@ -170,6 +170,7 @@ def get_stocks_prices(stocks: list) -> Any:
         logger.error(f"Ошибка: {e}")
         return []
 
+
 def create_json_response(python_str: Any) -> str:
     """
     Функция для формирования строки json.

@@ -1,9 +1,8 @@
 import json
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 from datetime import datetime
 import pytest
 import pandas as pd
-from pathlib import Path
 from src.views import get_date_range, main_func
 
 
