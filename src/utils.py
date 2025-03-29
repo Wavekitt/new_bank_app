@@ -14,6 +14,7 @@ load_dotenv()
 currency_api_key = os.getenv("CURRENCY_API_KEY")
 stocks_api_key = os.getenv("STOCKS_API_KEY")
 
+
 logs_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "logs")
 if not os.path.exists(logs_dir):
     os.makedirs(logs_dir)
@@ -25,6 +26,18 @@ file_formatter = logging.Formatter("%(asctime)s - %(filename)s - %(levelname)s: 
 file_handler.setFormatter(file_formatter)
 logger.addHandler(file_handler)
 logger.setLevel(logging.DEBUG)
+
+
+settings_file = "user_settings.json"
+try:
+    with open(settings_file, "r", encoding="utf-8") as f:
+        user_settings = json.load(f)
+        currencies = user_settings.get("currencies", [])
+        stocks = user_settings.get("stocks", [])
+except (FileNotFoundError, json.JSONDecodeError) as e:
+    logger.error(f"Ошибка при загрузке настроек: {e}")
+    currencies = []
+    stocks = []
 
 
 def get_greeting() -> str:
@@ -157,10 +170,16 @@ def get_stocks_prices(stocks: list) -> Any:
         logger.error(f"Ошибка: {e}")
         return []
 
-
 def create_json_response(python_str: Any) -> str:
     """
     Функция для формирования строки json.
     """
     json_data = json.dumps(python_str, indent=4, ensure_ascii=False)
     return json_data
+
+
+currency_rates = convertation_currency(currencies)
+stock_prices = get_stocks_prices(stocks)
+
+logger.info(f"Курсы валют: {currency_rates}")
+logger.info(f"Цены на акции: {stock_prices}")
