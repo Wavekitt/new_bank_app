@@ -1,5 +1,5 @@
 import os
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch, mock_open
 
 import pandas as pd
 from dotenv import load_dotenv
@@ -42,14 +42,13 @@ def test_analyze_cards():
     assert result[1]["total_expenses"] == 2000
 
 
+@patch("builtins.open", mock_open(read_data='{"currencies": ["USD"]}'))
 @patch("requests.get")
-def test_convertation_currency_error(mock_get: MagicMock) -> None:
-    """Тест с ошибкой в API-запросе (например, неверный ответ от сервера) при получении курса валют"""
-    currencies = ["USD"]
-    params = {"from": "USD", "to": "RUB", "amount": 1}
-    mock_get.return_value.status_code = 500
-    assert convertation_currency(currencies) == []
-    mock_get.assert_called_once_with(currency_url, headers=headers, params=params, timeout=30)
+def test_convertation_currency_simple(mock_get):
+    mock_get.return_value.status_code = 200
+    mock_get.return_value.json.return_value = {"result": 75.50}
+    result = convertation_currency()
+    assert result == [{"currency": "USD", "rate": 75.5}]
 
 
 def test_get_top_five_trans(sample_transactions_data):
@@ -64,12 +63,12 @@ def test_get_top_five_trans(sample_transactions_data):
     assert result == expected_result
 
 
+@patch("builtins.open", mock_open(read_data='{"stocks": ["AAPL"]}'))
 @patch("requests.get")
-def test_get_stocks_prices_api_error(mock_get: MagicMock) -> None:
-    """Тест с ошибкой в API-запросе (например, неверный ответ от сервера) при получении цены акций"""
-    stocks = ["AAPL"]
+def test_get_stocks_prices_api_error(mock_get):
     mock_get.return_value.status_code = 500
-    assert get_stocks_prices(stocks) == []
+    result = get_stocks_prices()
+    assert result == []
 
 
 def test_create_json_response():

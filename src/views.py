@@ -74,8 +74,8 @@ def main_func(input_date: str, xlsx_path: Path = XLSX_PATH) -> str:
         greeting = f"Отчёт за период: {date_range_str}"
         cards = analyze_cards(data)
         top_transactions = get_top_five_trans(filtered_data)
-        currency_rates = convertation_currency(os.getenv("CURRENCY_API_KEY"))
-        stock_prices = get_stocks_prices(os.getenv("STOCKS_API_KEY"))
+        currency_rates = convertation_currency()
+        stock_prices = get_stocks_prices()
 
         # Формирование результата
         result = {
